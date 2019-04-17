@@ -1,13 +1,10 @@
 # A game that shows users a simple arithmetic question and a time limit to answer the greatest number of math questions possible
 
-
-########### FIX THE TIMER SO YOU  DONT HAVE TO DIVIDE IN ORDER TO GET THE TIME ################
-
-########### FIX THE FLOAT RESULTS IN DIVISION ################
-
-########### COUNT THE NUMBER OF CORRECT/INCORRECT ANSWERS ################
-
-
+####################################################################################
+######################### FIX THE FLOAT RESULTS IN DIVISION ########################
+######################## FIX THIS AND YOU'RE BASICALLY DONE! #######################
+####################################################################################
+import time
 def timer():
 	"""
 	Function that will measure the time limit for the game.
@@ -15,13 +12,15 @@ def timer():
 	Will probably be 3 minutes or something of that sort
 	"""
 	import time
+
+	# Saw this code on StackOverflow
 	t = 3
     
-    while t:
-    	mins, secs = divmod(t, 60)
-    	time.sleep(1)
-    	t -= 1
-    print("Done!")
+	while t:
+		time.sleep(1)
+		t -= 1
+	return False
+##################################### E N D   D E F ##########################################
 
 def user_input():
 	"""
@@ -36,6 +35,7 @@ def user_input():
 			print("Be careful! You're running out of time!")
 
 	return usr_in
+##################################### E N D   D E F ##########################################
 
 def problem():
 	"""
@@ -48,7 +48,7 @@ def problem():
 	# lambda used to provide the numbers to be used in the problem
 	number = lambda: random.randint(0, 10)
 
-	prob = random.randint(1, 4)
+	prob = random.randint(1, 3)
 	x = number()
 	y = number()
 
@@ -57,7 +57,7 @@ def problem():
 
 		z = x + y
 
-		# 'prob_str' is going to be used to store as a history variable
+		# 'prob_str' is going to be used to store in a dictionary
 		prob_str = f'{x} + {y}'
 		print(prob_str)
 
@@ -74,12 +74,12 @@ def problem():
 		# Subtraction
         
         # Eliminating the possibility of getting a negative number by setting it higher than 'y'
-        #if x < y:
-         #   x = y + 1
+		if x < y:
+			x = y + 1
             
 		z = x - y
 
-		# 'prob_str' is going to be used to store as a history variable
+		# 'prob_str' is going to be used to store in a dictionary
 		prob_str = f'{x} - {y}'
 		print(prob_str)
 
@@ -97,7 +97,7 @@ def problem():
 
 		z = x * y
 
-		# 'prob_str' is going to be used to store as a history variable
+		# 'prob_str' is going to be used to store in a dictionary
 		prob_str = f'{x} x {y}'
 		print(prob_str)
 
@@ -115,14 +115,25 @@ def problem():
 
 		########### Have to work on this. Float numbers are generally hard to get by mind #############
 
-		# Division by 0 is not possible, in that case, re-shuffle the numbers and add 1 to prevent another 0
-		if x == 0 or y == 0:
-			x = number() + 1
-			y = number() + 1
-
+		# Division by 0 is not possible; adding 1 to prevent 0
+		x += 1
+		y += 1
+        
 		z = x / y
 
-		# 'prob_str' is going to be used to store as a history variable
+        # This could potentially slow down the game to an extent....
+        
+        # Basically saying that if the quotient of x / y is not int then reshuffle x and y until
+        # an int division is reached...
+        
+        # Could do int division (//) and tell user to input answer rounded one number down or up?
+		while isinstance(z, float):
+			x = number() + 1
+			y = number() + 1        
+			z = x / y
+            
+
+		# 'prob_str' is going to be used to store in a dictionary
 		prob_str = f'{x} / {y}'
 		print(prob_str)
 
@@ -133,7 +144,6 @@ def problem():
 		print(f'Your answer: {answer}\nCorrect answer: {z}\n')
 		return prob_str, verdict
 ###################################### E N D   I F  ##########################################
-
 ##################################### E N D   D E F ##########################################
 
 # Dictionary that holds the problems asked as key and the results as the value
@@ -141,19 +151,25 @@ history = dict()
 
 # Stores the amount of questions that were asked before time ran out
 num_questions = 0
-timer()
-"""
+
+# This will control the game loop.
+#time = timer()
+
+#while time != False:
+
 # Counter for the while loop
 # Temporary, will remove to be replaced with a while timer() and
 # end that timer function with a return False to break out of this loop
 x = 10
 
 while x:
-	# This function returns a tuple
+	# problem() function returns a tuple
     # prob_str is the problem that was asked and verdict is the outcome (correct or incorrect)
 	prob_str, verdict = problem()
 	history[prob_str] = verdict
+    
 
+	num_questions += 1
 	x -= 1
 
 # Counting the number of correct and incorrect answers
@@ -172,6 +188,6 @@ for k, v in history.items():
         
     print(k, v)
     
-print(f'Out of 10 questions, you got {correct} right and {incorrect} wrong.')
-print('You got an average of: ', )
-"""
+print(f'\nOut of {num_questions} questions, you got {correct} right and {incorrect} wrong.')
+print('You got an averege of: ', int((correct / num_questions)*100), '%')
+print('Time is ', t)
