@@ -1,11 +1,9 @@
 # A game that shows users a simple arithmetic question and a time limit to answer the greatest number of math questions possible
 
+######################### ADD TIMER TO MAIN LOOP ########################
 
-######################### FIX THE FLOAT RESULTS IN DIVISION ########################
+######################### LINK TO A BASIC DATABASE TO STORE ALL TIME BEST SCORES #########################
 
-######################## ADD TIMER TO MAIN GAME LOOP #######################
-
-import time
 def timer():
 	"""
 	Function that will measure the time limit for the game.
@@ -14,7 +12,6 @@ def timer():
 	"""
 	import time
 
-	# Saw this code on StackOverflow
 	t = 3
     
 	while t:
@@ -49,7 +46,7 @@ def problem():
 	# lambda used to provide the numbers to be used in the problem
 	number = lambda: random.randint(0, 10)
 
-	prob = random.randint(1, 3)
+	prob = random.randint(1, 4)
 	x = number()
 	y = number()
 
@@ -117,21 +114,12 @@ def problem():
 		########### Have to work on this. Float numbers are generally hard to get by mind #############
 
 		# Division by 0 is not possible; adding 1 to prevent 0
-		x += 1
 		y += 1
         
-		z = x / y
-
-        # This could potentially slow down the game to an extent....
+		# Since it's x/y, setting x to a multiple of y within range of 0 to 10
+		x = y * random.randint(1,10)
         
-        # Basically saying that if the quotient of x / y is not int then reshuffle x and y until
-        # an int division is reached...
-        
-        # Could do int division (//) and tell user to input answer rounded one number down or up?
-		while isinstance(z, float):
-			x = number() + 1
-			y = number() + 1        
-			z = x / y
+		z = x // y
             
 
 		# 'prob_str' is going to be used to store in a dictionary
@@ -191,4 +179,20 @@ for k, v in history.items():
     
 print(f'\nOut of {num_questions} questions, you got {correct} right and {incorrect} wrong.')
 print('You got an averege of: ', int((correct / num_questions)*100), '%')
-print('Time is ', t)
+
+"""
+Testing threading instead of using time.sleep(). Threading wont affect the
+use of the program like time.sleep() which interrupts the process until
+the specified time interval
+
+from threading import Timer
+
+def rev():
+    return 0
+
+x = rev
+
+t = Timer(2.0, rev)
+t.start()
+print(x)
+"""
