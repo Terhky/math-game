@@ -1,9 +1,10 @@
 # A game that shows users a simple arithmetic question and a time limit to answer the greatest number of math questions possible
 
-####################################################################################
+
 ######################### FIX THE FLOAT RESULTS IN DIVISION ########################
-######################## FIX THIS AND YOU'RE BASICALLY DONE! #######################
-####################################################################################
+
+######################## ADD TIMER TO MAIN GAME LOOP #######################
+
 import time
 def timer():
 	"""
