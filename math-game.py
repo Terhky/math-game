@@ -1,23 +1,35 @@
 # A game that shows users a simple arithmetic question and a time limit to answer the greatest number of math questions possible
 
-######################### ADD TIMER TO MAIN LOOP ########################
 
-######################### LINK TO A BASIC DATABASE TO STORE ALL TIME BEST SCORES #########################
+######################### CREATE FILE TO STORE HIGHEST SCORE ALONG WITH NAME ########################
+
+######################### GAME WAITS FOR USER INPUT TO END GAME. CREATE SYSTEM INTERRUPT SO WHEN THE TIMER FINISHES, THE USER CANNOT INPUT ########################
+######################### THIS MIGHT HAVE TO DO WITH THE LOGIC, INSTEAD OF A METHOD/FUNCTION PER SE ########################
+import threading
 
 def timer():
-	"""
-	Function that will measure the time limit for the game.
+    """
+    Flag that represents when the game is to begin.
+    """
+    import time
 
-	Will probably be 3 minutes or something of that sort
-	"""
-	import time
+    # 3 seconds to begin a countdown in order to let users know that the game will begin
+    t = 3
 
-	t = 3
+    # 3...2...1
+    while t:
+        print(t, end='\r')
+        time.sleep(1)
+        t -= 1
+
+    event.set()   # ...GO!
+
+    # sleep will be the length of the game; a minute or more
+    time.sleep(3)
+
+    # End game flag
+    event.clear()
     
-	while t:
-		time.sleep(1)
-		t -= 1
-	return False
 ##################################### E N D   D E F ##########################################
 
 def user_input():
@@ -30,7 +42,7 @@ def user_input():
 			break
 		except:
 			print('Not a number')
-			print("Be careful! You're running out of time!")
+			print("Be careful!\nYou're running out of time!")
 
 	return usr_in
 ##################################### E N D   D E F ##########################################
@@ -55,8 +67,9 @@ def problem():
 
 		z = x + y
 
-		# 'prob_str' is going to be used to store in a dictionary
-		prob_str = f'{x} + {y}'
+		prob_str = f'{x} + {y}'   # 'prob_str' is going to be used to store in a dictionary
+        
+        # Return carriage to overwrite the line and not clutter the screen
 		print(prob_str)
 
 		answer = user_input()
@@ -77,8 +90,9 @@ def problem():
             
 		z = x - y
 
-		# 'prob_str' is going to be used to store in a dictionary
-		prob_str = f'{x} - {y}'
+		prob_str = f'{x} - {y}'   # 'prob_str' is going to be used to store in a dictionary
+        
+        # Return carriage to overwrite the line and not clutter the screen
 		print(prob_str)
 
 		answer = user_input()
@@ -95,15 +109,16 @@ def problem():
 
 		z = x * y
 
-		# 'prob_str' is going to be used to store in a dictionary
-		prob_str = f'{x} x {y}'
+		prob_str = f'{x} x {y}'   # 'prob_str' is going to be used to store in a dictionary
+        
+        # Return  carriage to overwrite the line and not clutter the screen
 		print(prob_str)
 
 		answer = user_input()
 
 		verdict = z == answer
 
-		print(f'Your answer: {answer}\nCorrect answer: {z}\n')
+		print(f'Your answer: {answer}\nCorrect answer: {z}\n',)
         
 		return prob_str, verdict
 ###################################### E N D   I F  ##########################################
@@ -122,77 +137,96 @@ def problem():
 		z = x // y
             
 
-		# 'prob_str' is going to be used to store in a dictionary
-		prob_str = f'{x} / {y}'
+		prob_str = f'{x} / {y}'   # 'prob_str' is going to be used to store in a dictionary
+        
+        # Return  carriage to overwrite the line and not clutter the screen
 		print(prob_str)
 
 		answer = user_input()
 
 		verdict = z == answer
 
-		print(f'Your answer: {answer}\nCorrect answer: {z}\n')
+		print(f'Your answer: {answer}\nCorrect answer: {z}\n',)
 		return prob_str, verdict
 ###################################### E N D   I F  ##########################################
 ##################################### E N D   D E F ##########################################
 
-# Dictionary that holds the problems asked as key and the results as the value
-history = dict()
+play = True # Main game loop control
 
-# Stores the amount of questions that were asked before time ran out
-num_questions = 0
+while play:
+    history = dict()    # Dictionary that holds the problems asked as key and the results as the value
+    num_questions = 0   # Stores the amount of questions that were asked before time ran out
 
-# This will control the game loop.
-#time = timer()
+    event = threading.Event()   # Setting the event for the timer
+    t1 = threading.Thread(target = timer)
+    t1.start()   # Game start
 
-#while time != False:
+    # Wait until event is set
+    event.wait()
 
-# Counter for the while loop
-# Temporary, will remove to be replaced with a while timer() and
-# end that timer function with a return False to break out of this loop
-x = 10
+    while event.is_set():
+        # problem() function returns a tuple
+        # prob_str is the problem that was asked and verdict is the outcome (correct or incorrect)
+        prob_str, verdict = problem()
+        history[prob_str] = verdict
 
-while x:
-	# problem() function returns a tuple
-    # prob_str is the problem that was asked and verdict is the outcome (correct or incorrect)
-	prob_str, verdict = problem()
-	history[prob_str] = verdict
+        num_questions += 1
+
+    print('Game over!\n')
+
+    # Counting the number of correct and incorrect answers
+    correct = 0
+    incorrect = 0
+
+    # Counting results
+    for k, v in history.items():
+        if v:
+            correct += 1
+
+        else:
+            incorrect += 1
+
+        print(f'Problem: {k}     Result: {v}')
+
+    # Outputting score results
+    print(f'\nOut of {num_questions} questions, you got {correct} right and {incorrect} wrong.')
+    print('You got an averege of: ', int((correct / num_questions)*100), '%')
     
-
-	num_questions += 1
-	x -= 1
-
-# Counting the number of correct and incorrect answers
-correct = 0
-incorrect = 0
-
-# Changing from True/False to 'Correct'/'Incorrect' and printing the answer
-for k, v in history.items():
-    if v:
-        v = 'Correct'
-        correct += 1
-        
+    while True:
+        try:
+            print('\nWould you like to play again?')
+            print('1 = Yes / 0 = No')
+            c = int(input())   # c = choice
+            
+            # Making sure that c isn't another number
+            if c == 1 or c == 0:
+                break
+            else:
+                print(f'{c} is not a valid input\n')
+                continue
+                
+        except:
+            print('Please make a valid input\n')
+    
+    if c == 1:
+        print('\n'*2)
+        continue
     else:
-        v = 'Incorrect'
-        incorrect += 1
+        # Not sure if this will help at all, but I think it might free upsome space,
+        # instead of overwriting an existing value
+        del correct
+        del incorrect
+        del num_questions
+        del c
+        del history
+        del prob_str
+        del verdict
         
-    print(k, v)
-    
-print(f'\nOut of {num_questions} questions, you got {correct} right and {incorrect} wrong.')
-print('You got an averege of: ', int((correct / num_questions)*100), '%')
+        print('\n'*2)
+        play = False
+        
+##########################################################################################
+######################### FILE CREATION AND WRITING WOULD BE HERE ########################
+##########################################################################################
 
-"""
-Testing threading instead of using time.sleep(). Threading wont affect the
-use of the program like time.sleep() which interrupts the process until
-the specified time interval
-
-from threading import Timer
-
-def rev():
-    return 0
-
-x = rev
-
-t = Timer(2.0, rev)
-t.start()
-print(x)
-"""
+print('Thanks for playing!')
