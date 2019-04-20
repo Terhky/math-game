@@ -1,6 +1,3 @@
-# A game that shows users a simple arithmetic question and a time limit to answer the greatest number of math questions possible
-
-
 ######################### CREATE FILE TO STORE HIGHEST SCORE ALONG WITH NAME ########################
 
 ######################### GAME WAITS FOR USER INPUT TO END GAME. CREATE SYSTEM INTERRUPT SO WHEN THE TIMER FINISHES, THE USER CANNOT INPUT ########################
@@ -30,6 +27,44 @@ def timer():
     # End game flag
     event.clear()
     
+##################################### E N D   D E F ##########################################
+
+# Verify if the player's name is already in the highschore table
+# Limit the number of highscores to 20 different players to save space
+# Make a main menu in which you can pull your name from the txt to see your score
+
+def save_game(avg, num_questions):
+    while True:
+        try:
+            print('Save Score?')
+            c = int(input('1 = Yes/0 = No\t'))
+
+            if c == 1 or c == 0:
+                break
+            else:
+                print(f'{c} is not a valid input\n')
+                continue
+
+        except:
+            print(f'{c} is not a valid input\n')
+            continue
+            
+    if c == 1:        
+        name = ''
+        while len(name) < 1:
+            name = input('Enter name:\t')
+            
+        save_str = f'Score by: {name}  |  avg correct: {avg}%  |  num of questions: {num_questions}'
+    
+        # Have to format the saving in order of highest score to lesser score
+        # This will be done with the value of avg
+        # Make this value a float and to a 2 point decimal?
+        with open("highscores.txt", "a") as fhand:
+            print(save_str, file = fhand)
+            
+        print('\nSaved!')
+        print(save_str)
+        
 ##################################### E N D   D E F ##########################################
 
 def user_input():
@@ -177,6 +212,7 @@ while play:
     # Counting the number of correct and incorrect answers
     correct = 0
     incorrect = 0
+    avg = int((correct/num_questions)*100)
 
     # Counting results
     for k, v in history.items():
@@ -190,7 +226,7 @@ while play:
 
     # Outputting score results
     print(f'\nOut of {num_questions} questions, you got {correct} right and {incorrect} wrong.')
-    print('You got an averege of: ', int((correct / num_questions)*100), '%')
+    print(f'You got an averege of: {avg}%')
     
     while True:
         try:
@@ -212,6 +248,8 @@ while play:
         print('\n'*2)
         continue
     else:
+        
+            
         # Not sure if this will help at all, but I think it might free upsome space,
         # instead of overwriting an existing value
         del correct
@@ -221,12 +259,10 @@ while play:
         del history
         del prob_str
         del verdict
+        del avg
         
         print('\n'*2)
         play = False
-        
-##########################################################################################
-######################### FILE CREATION AND WRITING WOULD BE HERE ########################
-##########################################################################################
+
 
 print('Thanks for playing!')
