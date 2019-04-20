@@ -22,7 +22,7 @@ def timer():
     event.set()   # ...GO!
 
     # sleep will be the length of the game; a minute or more
-    time.sleep(3)
+    time.sleep(10)
 
     # End game flag
     event.clear()
@@ -34,6 +34,10 @@ def timer():
 # Make a main menu in which you can pull your name from the txt to see your score
 
 def save_game(avg, num_questions):
+    """
+    Handles score saving.
+    Limit of 20 scores in save data to save space.
+    """
     while True:
         try:
             print('Save Score?')
@@ -248,8 +252,8 @@ while play:
         print('\n'*2)
         continue
     else:
+        save_game(avg, num_questions)
         
-            
         # Not sure if this will help at all, but I think it might free upsome space,
         # instead of overwriting an existing value
         del correct
