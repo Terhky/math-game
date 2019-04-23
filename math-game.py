@@ -1,7 +1,3 @@
-######################### CREATE FILE TO STORE HIGHEST SCORE ALONG WITH NAME ########################
-
-######################### GAME WAITS FOR USER INPUT TO END GAME. CREATE SYSTEM INTERRUPT SO WHEN THE TIMER FINISHES, THE USER CANNOT INPUT ########################
-######################### THIS MIGHT HAVE TO DO WITH THE LOGIC, INSTEAD OF A METHOD/FUNCTION PER SE ########################
 import threading
 
 def timer():
@@ -25,6 +21,10 @@ def timer():
     time.sleep(10)
 
     # End game flag
+    
+    print("Time's up!")
+    
+    print('Answer will not be counted towards score...')
     event.clear()
     
 ##################################### E N D   D E F ##########################################
@@ -37,6 +37,10 @@ def save_game(avg, num_questions):
     """
     Handles score saving.
     Limit of 20 scores in save data to save space.
+    
+    Checks the highscore table every time there is a save request to check if the name already exists on the list.
+    If it is, then only overwrite it if the current score is higher than the one in the table. Otherwise add the
+    lesser score to it's rightful position below the higher score
     """
     while True:
         try:
@@ -57,7 +61,9 @@ def save_game(avg, num_questions):
         name = ''
         while len(name) < 1:
             name = input('Enter name:\t')
-            
+        
+        # Have to format this string to accomdate for longer names.
+        # Maybe hard code it to make it a max of 5 chars and space it accordingly?
         save_str = f'Score by: {name}  |  avg correct: {avg}%  |  num of questions: {num_questions}'
     
         # Have to format the saving in order of highest score to lesser score
@@ -68,14 +74,28 @@ def save_game(avg, num_questions):
             
         print('\nSaved!')
         print(save_str)
+    
+    else:
+        return
         
 ##################################### E N D   D E F ##########################################
 
 def user_input():
 	"""
 	Handles user input and handles error in case a non-int is inputted
+    
+    While event is set to True run the user input and break to return answer.
+    Otherwise the loop would run continuously.
+    
+    An additional if statement to check for event is added just in case the
+    program enters the loop just after the time ends as a fail-safe.
+    
+    When False is returned, the question is omitted and not counted towards final score
 	"""
-	while True:
+    
+	event.wait()
+    
+	while event.is_set():
 		try:
 			usr_in = int(input('Answer:\t'))
 			break
@@ -83,14 +103,17 @@ def user_input():
 			print('Not a number')
 			print("Be careful!\nYou're running out of time!")
 
-	return usr_in
+	if event.is_set():
+		return usr_in
+	else:
+		return None
 ##################################### E N D   D E F ##########################################
 
 def problem():
 	"""
 	Function that decides at pseudo-random which problem will be given with the ints 1 through 4
 
-	# Returns variable 'verdict' to use for counting how many correct and incorrect answers we have in the main game loop
+	Returns variable 'verdict' to use for counting how many correct and incorrect answers we have in the main game loop
 	"""
 	import random
 
@@ -112,8 +135,11 @@ def problem():
 		print(prob_str)
 
 		answer = user_input()
-
-		verdict = z == answer
+        
+		if answer == None:
+			verdict = answer
+		else:
+			verdict = z == answer
 
 		print(f'Your answer: {answer}\nCorrect answer: {z}\n')
         
@@ -135,8 +161,11 @@ def problem():
 		print(prob_str)
 
 		answer = user_input()
-
-		verdict = z == answer
+        
+		if answer == None:
+			verdict = answer
+		else:
+			verdict = z == answer
 
 		print(f'Your answer: {answer}\nCorrect answer: {z}\n')
         
@@ -154,8 +183,11 @@ def problem():
 		print(prob_str)
 
 		answer = user_input()
-
-		verdict = z == answer
+        
+		if answer == None:
+			verdict = answer
+		else:
+			verdict = z == answer
 
 		print(f'Your answer: {answer}\nCorrect answer: {z}\n',)
         
@@ -182,8 +214,11 @@ def problem():
 		print(prob_str)
 
 		answer = user_input()
-
-		verdict = z == answer
+        
+		if answer == None:
+			verdict = answer
+		else:
+			verdict = z == answer
 
 		print(f'Your answer: {answer}\nCorrect answer: {z}\n',)
 		return prob_str, verdict
@@ -216,18 +251,25 @@ while play:
     # Counting the number of correct and incorrect answers
     correct = 0
     incorrect = 0
-    avg = int((correct/num_questions)*100)
+    
 
     # Counting results
     for k, v in history.items():
         if v:
             correct += 1
 
-        else:
+        elif v == False:
             incorrect += 1
+        
+        # If answer is None then subtract that question 
+        else:
+            num_questions -=1
 
-        print(f'Problem: {k}     Result: {v}')
-
+        print(f'Problem: {k}\t\tResult: {v}')
+    
+    # Averege percent of correcft answers
+    avg = float((correct/num_questions)*100)
+    
     # Outputting score results
     print(f'\nOut of {num_questions} questions, you got {correct} right and {incorrect} wrong.')
     print(f'You got an averege of: {avg}%')
@@ -270,3 +312,50 @@ while play:
 
 
 print('Thanks for playing!')
+# Working on the saving of data
+# Need to check if the entered score is higher or lesser than the other info inside the highscore.txt file
+
+# If it is then add one line above the higher score but below the score that is higher than itself
+#(exception is if it's the top score)
+
+# If the same user has a score already in the scoreboard and the new score is lower than the existing one
+#then the score is added in it's rightful place following the previous rule
+
+"""
+# name of player
+# num of questions completed
+# avg score
+
+name = 'Dood'
+num_questions = 7
+avg = 80.9
+new_scr = f'{avg}%'
+
+save_str = f'{avg}%   |   Score by: {name}   |   num of questions: {num_questions}'
+
+def avg_catch(line):
+    """
+    Gets the avg to make a score out of it
+    """   
+    avg = line[6].split('%')
+    avg = float(avg[0])
+    
+    return avg
+
+with open('highscores.txt') as fhand:
+    data = fhand.readlines()
+
+# Sorting data from largest to smallest to get the top scores
+data.sort(reverse=True)
+
+for lines in data:
+    lines = lines.split()
+    
+    # Replacing a previous lesser score
+    if lines[2].lower() == name.lower():
+        old_avg = avg_catch(lines)
+        
+        if old_avg < avg:
+            lines[6] = new_scr
+        else:
+"""
