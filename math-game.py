@@ -1,3 +1,6 @@
+############# Make a main menu for score searching or sort by specifics like sort by avg% or num of questions ############
+
+
 import threading
 
 def timer():
@@ -29,9 +32,6 @@ def timer():
     
 ##################################### E N D   D E F ##########################################
 
-# Verify if the player's name is already in the highschore table
-# Limit the number of highscores to 20 different players to save space
-# Make a main menu in which you can pull your name from the txt to see your score
 
 def save_game(avg, num_questions):
     """
@@ -59,18 +59,53 @@ def save_game(avg, num_questions):
             
     if c == 1:        
         name = ''
-        while len(name) < 1:
-            name = input('Enter name:\t')
-        
-        # Have to format this string to accomdate for longer names.
-        # Maybe hard code it to make it a max of 5 chars and space it accordingly?
+        while len(name) < 1 or len(name) > 5:
+            print('Enter name...')
+            name = input('Name must contain 1 character and be lesser than 5 characters long:\t')
+            
+            if len(name) > 5:
+                print('Invalid name...\n')
+                continue
+            
         save_str = f'Score by: {name}  |  avg correct: {avg}%  |  num of questions: {num_questions}'
-    
-        # Have to format the saving in order of highest score to lesser score
-        # This will be done with the value of avg
-        # Make this value a float and to a 2 point decimal?
-        with open("highscores.txt", "a") as fhand:
-            print(save_str, file = fhand)
+        
+        with open('highscores.txt', 'r') as fhand:    
+            scores = fhand.readlines()
+
+        edit = list()   # Temp variable to be used to manipulate data
+
+        for lines in scores:
+            lines = lines.split()
+
+            old_name = lines[4]
+
+            if name.lower() == old_name.lower():
+                # Getting previous avg
+                old_avg = lines[0].split('%')
+                old_avg = float(old_avg[0])
+
+                if avg > old_avg:
+                    #splitting to make output uniform with the join method
+                    lines = save_str.split()
+
+            lines = '\t'.join(lines)
+            edit.append(lines)
+
+        scores = edit   # Overwriting scores to make storing easier
+        del edit # Freeing up space by deleting variable
+
+        # Limit of 20 entries in the table
+        if len(scores) > 20:
+            scores.pop()
+
+        #Sorting by reverse to arrange from larger to lesser
+        scores.sort(reverse = True)
+
+        with open('highscores.txt', 'w') as fhand:
+            for lines in scores:
+                lines = lines.rstrip()
+                print(lines)
+                print(lines, file = fhand)
             
         print('\nSaved!')
         print(save_str)
@@ -112,7 +147,6 @@ def user_input():
 def problem():
 	"""
 	Function that decides at pseudo-random which problem will be given with the ints 1 through 4
-
 	Returns variable 'verdict' to use for counting how many correct and incorrect answers we have in the main game loop
 	"""
 	import random
@@ -312,50 +346,3 @@ while play:
 
 
 print('Thanks for playing!')
-# Working on the saving of data
-# Need to check if the entered score is higher or lesser than the other info inside the highscore.txt file
-
-# If it is then add one line above the higher score but below the score that is higher than itself
-#(exception is if it's the top score)
-
-# If the same user has a score already in the scoreboard and the new score is lower than the existing one
-#then the score is added in it's rightful place following the previous rule
-
-"""
-# name of player
-# num of questions completed
-# avg score
-
-name = 'Dood'
-num_questions = 7
-avg = 80.9
-new_scr = f'{avg}%'
-
-save_str = f'{avg}%   |   Score by: {name}   |   num of questions: {num_questions}'
-
-def avg_catch(line):
-    """
-    Gets the avg to make a score out of it
-    """   
-    avg = line[6].split('%')
-    avg = float(avg[0])
-    
-    return avg
-
-with open('highscores.txt') as fhand:
-    data = fhand.readlines()
-
-# Sorting data from largest to smallest to get the top scores
-data.sort(reverse=True)
-
-for lines in data:
-    lines = lines.split()
-    
-    # Replacing a previous lesser score
-    if lines[2].lower() == name.lower():
-        old_avg = avg_catch(lines)
-        
-        if old_avg < avg:
-            lines[6] = new_scr
-        else:
-"""
