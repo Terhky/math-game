@@ -41,11 +41,11 @@ def save_game(avg, num_questions):
     Checks the highscore table every time there is a save request to check if the name already exists on the list.
     If it is, then only overwrite it if the current score is higher than the one in the table. Otherwise add the
     lesser score to it's rightful position below the higher score
-    """
+    """    
     while True:
         try:
             print('Save Score?')
-            c = int(input('1 = Yes/0 = No\t'))
+            c = int(input('1 = Yes/0 = No\n'))
 
             if c == 1 or c == 0:
                 break
@@ -61,38 +61,42 @@ def save_game(avg, num_questions):
         name = ''
         while len(name) < 1 or len(name) > 5:
             print('Enter name...')
-            name = input('Name must contain 1 character and be lesser than 5 characters long:\t')
+            name = input('Name must contain 1 character and be lesser than 5 characters long\n')
             
             if len(name) > 5:
                 print('Invalid name...\n')
                 continue
             
-        save_str = f'Score by: {name}  |  avg correct: {avg}%  |  num of questions: {num_questions}'
+        save_str = f'{avg}%\t|\tScore by: {name}\t|\tnum of questions: {num_questions}\t|'
         
         with open('highscores.txt', 'r') as fhand:    
             scores = fhand.readlines()
 
-        edit = list()   # Temp variable to be used to manipulate data
-
-        for lines in scores:
+        edit = scores   # Temp variable to be used to manipulate data
+        save_str = save_str.split()
+        save_str = '\t'.join(save_str)
+        edit.append(save_str)
+        
+        # Added the current save data to the list and then checked the list elements to see if the playaer had history
+        # If True then it will check if the old score is lesser or higher than the current score. If current is higher
+        # then it will replace the older score. Otherwise it will be stored as a separate table entry
+        for i, lines in enumerate(scores):
             lines = lines.split()
 
-            old_name = lines[4]
-
-            if name.lower() == old_name.lower():
+            old_name = lines[4].lower()
+            
+            if name.lower() == old_name:
                 # Getting previous avg
                 old_avg = lines[0].split('%')
                 old_avg = float(old_avg[0])
-
+                
                 if avg > old_avg:
-                    #splitting to make output uniform with the join method
-                    lines = save_str.split()
-
-            lines = '\t'.join(lines)
-            edit.append(lines)
+                    edit.pop(i)
+                    break
+                else:
+                    break         
 
         scores = edit   # Overwriting scores to make storing easier
-        del edit # Freeing up space by deleting variable
 
         # Limit of 20 entries in the table
         if len(scores) > 20:
@@ -157,7 +161,8 @@ def problem():
 	prob = random.randint(1, 4)
 	x = number()
 	y = number()
-
+    
+###################################### S T A R T   I F  ##########################################
 	if prob == 1:
 		# Addition
 
@@ -302,7 +307,10 @@ while play:
         print(f'Problem: {k}\t\tResult: {v}')
     
     # Averege percent of correcft answers
-    avg = float((correct/num_questions)*100)
+    try:
+        avg = float((correct/num_questions)*100)
+    except:
+        avg = 0
     
     # Outputting score results
     print(f'\nOut of {num_questions} questions, you got {correct} right and {incorrect} wrong.')
@@ -311,8 +319,7 @@ while play:
     while True:
         try:
             print('\nWould you like to play again?')
-            print('1 = Yes / 0 = No')
-            c = int(input())   # c = choice
+            c = int(input('1 = Yes / 0 = No\t'))   # c = choice
             
             # Making sure that c isn't another number
             if c == 1 or c == 0:
@@ -330,19 +337,70 @@ while play:
     else:
         save_game(avg, num_questions)
         
-        # Not sure if this will help at all, but I think it might free upsome space,
-        # instead of overwriting an existing value
-        del correct
-        del incorrect
-        del num_questions
-        del c
-        del history
-        del prob_str
-        del verdict
-        del avg
-        
         print('\n'*2)
         play = False
 
 
 print('Thanks for playing!')
+
+
+"""
+
+######### HAVE TO CONVERT AVG IN SCORES TO FLOAT IN ORDER TO ORGANIZE THEM PROPERLY
+######### AS IT IS RIGHT NOW IT IS A STRING INSTEAD OF A NUMBER; REASON WHY 100 < 90
+
+name = 'perl'
+avg = 100
+num_questions = 70
+
+save_str = (f'{avg}%\t|\tScore by: {name}\t|\tnum of questions: {num_questions}\t|')
+
+with open('highscores.txt', 'r') as fhand:    
+    scores = fhand.readlines()
+
+edit = scores   # Temp variable to be used to manipulate data
+save_str = save_str.split()
+save_str = '\t'.join(save_str)
+edit.append(save_str)
+
+# Checking to see if player has a previous score. If True then it will check if the current score
+# is greater than the past one and if it is then it will be overwritten.
+
+#If the current player does not have an old score then the lines variable which is used to write
+# the scores into the edit list will be saved as the save_str format. Splitting 'lines' to make the
+# join method look more uniform during output.
+for i, lines in enumerate(scores):
+    lines = lines.split()
+
+    old_name = lines[4].lower()
+
+    if name.lower() == old_name:
+        # Getting previous avg
+        old_avg = lines[0].split('%')
+        old_avg = float(old_avg[0])
+
+        if avg > old_avg:
+            edit.pop(i)
+            break
+        else:
+            break
+
+for i, lines in enumerate(edit):
+    lines = lines.split('%')
+    lines = float(lines[0])
+    
+    scores[i] = lines
+
+for lines in scores:
+    print(lines)
+
+# Limit of 20 entries in the table
+if len(scores) > 20:
+    scores.pop()
+
+
+#Sorting by reverse to arrange from larger to lesser
+scores.sort(reverse = True)
+
+
+"""
