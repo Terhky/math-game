@@ -1,4 +1,6 @@
-############# Make a main menu for score searching or sort by specifics like sort by avg% or num of questions ############
+############# Make a main menu for score searching or sort by specifics like sort by avg % or num of questions ############
+
+# Join the save_str to the 'scores' list to have a properly sorted output
 
 
 import threading
@@ -346,61 +348,107 @@ print('Thanks for playing!')
 
 """
 
-######### HAVE TO CONVERT AVG IN SCORES TO FLOAT IN ORDER TO ORGANIZE THEM PROPERLY
-######### AS IT IS RIGHT NOW IT IS A STRING INSTEAD OF A NUMBER; REASON WHY 100 < 90
-
-name = 'perl'
-avg = 100
-num_questions = 70
-
-save_str = (f'{avg}%\t|\tScore by: {name}\t|\tnum of questions: {num_questions}\t|')
-
-with open('highscores.txt', 'r') as fhand:    
-    scores = fhand.readlines()
-
-edit = scores   # Temp variable to be used to manipulate data
-save_str = save_str.split()
-save_str = '\t'.join(save_str)
-edit.append(save_str)
-
-# Checking to see if player has a previous score. If True then it will check if the current score
-# is greater than the past one and if it is then it will be overwritten.
-
-#If the current player does not have an old score then the lines variable which is used to write
-# the scores into the edit list will be saved as the save_str format. Splitting 'lines' to make the
-# join method look more uniform during output.
-for i, lines in enumerate(scores):
-    lines = lines.split()
-
-    old_name = lines[4].lower()
-
-    if name.lower() == old_name:
-        # Getting previous avg
-        old_avg = lines[0].split('%')
-        old_avg = float(old_avg[0])
-
-        if avg > old_avg:
-            edit.pop(i)
-            break
-        else:
-            break
-
-for i, lines in enumerate(edit):
-    lines = lines.split('%')
-    lines = float(lines[0])
+def save_game(avg, num_questions):
+    """
+    #Handles score saving.
+    #Limit of 20 scores in save data to save space.
     
-    scores[i] = lines
+    #Checks the highscore table every time there is a save request to check if the name already exists on the list.
+    #If it is, then only overwrite it if the current score is higher than the one in the table. Otherwise add the
+    #lesser score to it's rightful position below the higher score
+    """ 
+    
+    ##################################### USER INPUT #####################################
+    
+    while True:
+        try:
+            print('Save Score?')
+            c = int(input('1 = Yes/0 = No\n'))
 
-for lines in scores:
-    print(lines)
+            if c == 1 or c == 0:
+                break
+            else:
+                print(f'{c} is not a valid input\n')
+                continue
 
-# Limit of 20 entries in the table
-if len(scores) > 20:
-    scores.pop()
+        except:
+            print(f'{c} is not a valid input\n')
+            continue
+            
+    if c == 1:        
+        name = ''
+        while len(name) < 1 or len(name) > 5:
+            print('Enter name...')
+            name = input('Name must contain 1 character and be lesser than 5 characters long\n')
+            
+            if len(name) > 5:
+                print('Invalid name...\n')
+                continue
+            
+        save_str = f'{avg} %  |  Score by: {name}  |  num of questions: {num_questions}  |'
+###############################################################################################################
 
+        with open('highscores.txt', 'r') as fhand:    
+            scores = fhand.readlines()
 
-#Sorting by reverse to arrange from larger to lesser
-scores.sort(reverse = True)
+        edit = scores   # Temp variable to be used to manipulate data
+        edit.append(save_str)   # Adding the new entry
+        
+        # If the player has history with game then compare name with the old entry.
+        for i, lines in enumerate(scores):
+            lines = lines.split()
+
+            old_name = lines[4].lower()
+            
+            if name.lower() == old_name:
+                # Getting previous avg
+                old_avg = lines[0]
+                old_avg = float(old_avg[0])
+                
+                # If new score is greater than old score then overite
+                if avg > old_avg:
+                    edit.pop(i)
+                    break
+                    
+                # Ignore if otherwise
+                else:
+                    break         
+        
+        # Re-zeroing list
+        scores = list()
+        
+        # Breaking the list appart to turn avg into float and sort the list effectively
+        for l in edit:
+            l = l.split()
+            l[0] = float(l[0])
+            scores.append(l)
+            
+        scores = sorted(scores)
+        
+        # Converting avg into string to store it in a sorted order and remove old, multimentional element.
+        for i, l in enumerate(scores):
+            #l[0] = str(l[0])
+            l = save_str
+            scores.append(l)
+            scores.pop(i)
+            
+        # Limit of 20 entries in the table
+        if len(scores) > 20:
+            scores.pop()
+
+        with open('highscores.txt', 'w') as fhand:
+            for lines in scores:                
+                print(lines)
+                print(lines, file = fhand)
+            
+        print('\nSaved!')
+        print(save_str)
+            
+    else:
+        return
+
+# Have to convert the avg into float to sort elements effictively
+save_game(60, 10)
 
 
 """
